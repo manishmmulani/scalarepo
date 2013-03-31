@@ -21,13 +21,14 @@ object Main {
    */
   def balance(chars: List[Char]): Boolean = {
     def balanceUsingCount(count : Int, chars: List[Char]) : Boolean = {
-      if (count < 0)  return false 
-
-      if (chars.isEmpty) count == 0
-      else {
-        if (chars.head == '(') balanceUsingCount(count + 1, chars.tail)
-        else if (chars.head == ')') balanceUsingCount(count - 1, chars.tail)
-        else balanceUsingCount(count, chars.tail)
+      if (count < 0) false 
+	  else {
+	      if (chars.isEmpty) count == 0
+	      else {
+	        if (chars.head == '(') balanceUsingCount(count + 1, chars.tail)
+	        else if (chars.head == ')') balanceUsingCount(count - 1, chars.tail)
+	        else balanceUsingCount(count, chars.tail)
+	      }
       }
     }
 
@@ -40,20 +41,18 @@ object Main {
    */
   def countChange(money: Int, coins: List[Int]): Int = {
 
+    def countChangeWithKCoins(money:Int, denomination:Int, remainingCoins:List[Int], k:Int):Int = {
+      if (k * denomination <= money) 
+        countChangeRec(money - k * denomination, remainingCoins) + 
+        countChangeWithKCoins(money, denomination, remainingCoins, k+1)
+      else
+        0
+    }
+
     def countChangeRec(money:Int, coins: List[Int]): Int = {
-
-      if (money == 0) return 1
-
-      if (coins.isEmpty) return 0
-
-      var noOfWays: Int = 0
-      val denomination:Int = coins.head
-      var k: Int = 0
-      while (k * denomination <= money) {
-    	  noOfWays = noOfWays + countChangeRec(money - k * denomination, coins.tail)
-    	  k = k+1
-      }
-      noOfWays
+      if (money == 0) 1
+      else if (coins.isEmpty) 0
+      else countChangeWithKCoins(money, coins.head, coins.tail, 0)
     }
 
     countChangeRec(money, coins)
