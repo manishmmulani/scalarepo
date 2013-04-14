@@ -50,6 +50,11 @@ class TweetSetSuite extends FunSuite {
     }
   }
 
+  test("remove on empty set") {
+    new TestSets {
+      assert(set1.remove(c) == set1)
+    }
+  }
   test("union: with empty set (1)") {
     new TestSets {
       assert(size(set5.union(set1)) === 4)
@@ -67,9 +72,9 @@ class TweetSetSuite extends FunSuite {
     }
   }
 
-  test("mostRetweetedHelper: with set5") {
+  test("mostRetweetedTweet: with set5") {
     new TestSets {
-      assert(set5.mostRetweetedHelper.retweets == 20)
+      assert(set5.mostRetweeted.retweets == 20)
     }
   }
   test("descending: set5") {

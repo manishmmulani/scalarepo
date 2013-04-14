@@ -71,9 +71,9 @@ abstract class TweetSet {
    * Question: Should we implement this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-  def mostRetweeted: Tweet = mostRetweetedHelper
+  def mostRetweeted: Tweet
   
-  def mostRetweetedHelper: Tweet
+  def reduceMostRetweeted(tweet: Tweet): Tweet
 
   /**
    * Returns a list containing all tweets of this set, sorted by retweet count
@@ -84,18 +84,7 @@ abstract class TweetSet {
    * Question: Should we implment this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-  def descendingByRetweet: TweetList = {
-    def resultList(topTweet: Tweet, updatedSet: TweetSet): TweetList = {
-      if (topTweet == null) Nil
-      else {
-        val nextSet = updatedSet.remove(topTweet)
-        val nextTopTweet = nextSet.mostRetweetedHelper
-        new Cons(topTweet, resultList(nextTopTweet, nextSet))
-      }
-    }
-    resultList(mostRetweetedHelper, this)
-  }
-
+  def descendingByRetweet: TweetList
 
   /**
    * The following methods are already implemented
@@ -132,8 +121,10 @@ class Empty extends TweetSet {
   override def unionBuilder(acc: TweetSet): TweetSet = acc
   
   override def mostRetweeted: Tweet = throw new NoSuchElementException("mostRetweeted doesn't exist for empty set.")
+
+  override def reduceMostRetweeted(tweet: Tweet): Tweet = tweet
   
-  def mostRetweetedHelper: Tweet = null
+  override def descendingByRetweet: TweetList = Nil
 
   /**
    * The following methods are already implemented
@@ -159,17 +150,17 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
   override def unionBuilder(acc:TweetSet):TweetSet = {
       right unionBuilder(left unionBuilder(acc incl elem))
   }
-    
-  def mostRetweetedHelper: Tweet = {
 
-    def betterTweet(tw1 : Tweet, tw2 : Tweet) : Tweet = {
-      if (tw1 == null) tw2
-      else if (tw2 == null) tw1
-      else if (tw1.retweets > tw2.retweets) tw1
-      else tw2
-    }
+  override def mostRetweeted: Tweet = reduceMostRetweeted(elem)
 
-    betterTweet(left.mostRetweetedHelper, betterTweet(elem, right.mostRetweetedHelper))
+  override def reduceMostRetweeted(tweet: Tweet): Tweet = {
+    val betterTweet: Tweet = if (elem.retweets > tweet.retweets) elem else tweet
+    right reduceMostRetweeted (left reduceMostRetweeted betterTweet)
+  }
+
+  def descendingByRetweet: TweetList = {
+    val maxRetweeted = mostRetweeted
+    new Cons(maxRetweeted, this.remove(maxRetweeted).descendingByRetweet)
   }
 
   /**
