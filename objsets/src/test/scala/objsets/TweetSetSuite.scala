@@ -56,6 +56,11 @@ class TweetSetSuite extends FunSuite {
     }
   }
 
+  test("union: set 5 with set 5 itself") {
+    new TestSets {
+      assert(size(set5.union(set5)) === 4)
+    }
+  }
   test("union: with empty set (2)") {
     new TestSets {
       assert(size(set1.union(set5)) === 4)

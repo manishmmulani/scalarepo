@@ -56,7 +56,11 @@ abstract class TweetSet {
    * Question: Should we implement this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-   def union(that: TweetSet): TweetSet
+   def union(that: TweetSet): TweetSet = {
+      unionBuilder(that)
+   }
+
+   def unionBuilder(acc: TweetSet):TweetSet
 
   /**
    * Returns the tweet from this set which has the greatest retweet count.
@@ -125,7 +129,7 @@ class Empty extends TweetSet {
 
   def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = acc
 
-  def union(that: TweetSet): TweetSet = that
+  override def unionBuilder(acc: TweetSet): TweetSet = acc
   
   override def mostRetweeted: Tweet = throw new NoSuchElementException("mostRetweeted doesn't exist for empty set.")
   
@@ -147,13 +151,15 @@ class Empty extends TweetSet {
 class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
 
   def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = {
-    right.filterAcc(p, left.filterAcc(p, if (p(elem)) acc.incl(elem) else acc))
-  }
-
-  def union(that: TweetSet): TweetSet = {
-    left.union(right).union(that).incl(elem)
+    val accSet = if (p(elem)) acc.incl(elem) else acc
+    val accSetLeft = left.filterAcc(p, accSet)
+    right.filterAcc(p, accSetLeft)
   }
   
+  override def unionBuilder(acc:TweetSet):TweetSet = {
+      right unionBuilder(left unionBuilder(acc incl elem))
+  }
+    
   def mostRetweetedHelper: Tweet = {
 
     def betterTweet(tw1 : Tweet, tw2 : Tweet) : Tweet = {
