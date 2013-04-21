@@ -59,9 +59,25 @@ class HuffmanSuite extends FunSuite {
     assert(until(singleton, combine)(leaflist) === Fork(Fork(Leaf('e',1),Leaf('t',2),List('e', 't'),3), Leaf('x',4), List('e', 't', 'x'), 7))
   }
 
+  test("decode function") {
+    new TestTrees() {
+    	assert(decode(t1, List(0)) === List('a'))
+    	assert(decode(t1, List(1,0)) === List('b', 'a'))
+    	assert(decode(t2, List(0,1,0,1,1)) === List('b', 'b', 'd'))
+    }
+    assert(decode(Leaf('f', 3), List()) === List('f'))
+  }
+
   test("decode and encode a very short text should be identity") {
     new TestTrees {
       assert(decode(t1, encode(t1)("ab".toList)) === "ab".toList)
+    }
+  }
+  
+  test("Quick encode function") {
+    new TestTrees {
+      assert(quickEncode(t1)("bba".toList) === List(1, 1, 0))
+      assert(quickEncode(t2)("bbda".toList) === List(0, 1, 0, 1, 1, 0, 0))
     }
   }
 }
