@@ -26,9 +26,15 @@ object Huffman {
 
   // Part 1: Basics
 
-  def weight(tree: CodeTree): Int = ??? // tree match ...
+  def weight(tree: CodeTree): Int = tree match {
+    case Leaf(char, w) => w
+    case Fork(left, right, chars, w) => weight(left) + weight(right) 
+  }
 
-  def chars(tree: CodeTree): List[Char] = ??? // tree match ...
+  def chars(tree: CodeTree): List[Char] = tree match {
+    case Leaf(c, w) => List(c)
+    case Fork(left, right, c, w) => chars(left) ::: chars(right)
+  }
 
   def makeCodeTree(left: CodeTree, right: CodeTree) =
     Fork(left, right, chars(left) ::: chars(right), weight(left) + weight(right))
@@ -71,7 +77,24 @@ object Huffman {
    *       println("integer is  : "+ theInt)
    *   }
    */
-  def times(chars: List[Char]): List[(Char, Int)] = ???
+  def times(chars: List[Char]): List[(Char, Int)] = {
+
+    def loop(chars: List[Char], freqList : List[(Char, Int)]): List[(Char, Int)] = chars match {
+      case List() => freqList
+      case x :: xs => loop(xs, updateFrequencyList(x, freqList))
+    }
+
+    def updateFrequencyList(c : Char, freqList : List[(Char, Int)]): List[(Char, Int)] = freqList match {
+	    case List() => List((c, 1))
+	    case x :: xs => 
+	    	if (charMatchesPair(c, freqList.head)) (c, freqList.head._2 + 1) :: freqList.tail 
+	    	else x :: updateFrequencyList(c, freqList.tail) 
+    }
+  
+    def charMatchesPair(c : Char, pair : (Char, Int)) = c == pair._1
+
+    loop(chars, List())
+  }
 
   /**
    * Returns a list of `Leaf` nodes for a given frequency table `freqs`.

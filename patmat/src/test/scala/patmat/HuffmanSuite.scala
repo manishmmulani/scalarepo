@@ -14,9 +14,10 @@ class HuffmanSuite extends FunSuite {
     val t2 = Fork(Fork(Leaf('a',2), Leaf('b',3), List('a','b'), 5), Leaf('d',4), List('a','b','d'), 9)
   }
 
-  test("weight of a larger tree") {
+  test("weight of trees") {
     new TestTrees {
       assert(weight(t1) === 5)
+      assert(weight(t2) === 9)
     }
   }
 
@@ -28,6 +29,20 @@ class HuffmanSuite extends FunSuite {
 
   test("string2chars(\"hello, world\")") {
     assert(string2Chars("hello, world") === List('h', 'e', 'l', 'l', 'o', ',', ' ', 'w', 'o', 'r', 'l', 'd'))
+  }
+
+  test("Times function") {
+    val freqList : List[(Char, Int)] = times("helloworld".toList)
+
+    assert(freqList.size === 7)
+
+    freqList.foreach(validateCount(_))
+    def validateCount(pair : (Char, Int)) = pair match {
+      case ('l', freq) => assert(freq === 3)
+      case ('o', freq) => assert(freq === 2)
+      case ('h', freq) => assert(freq === 1)
+      case (_, _) => assert(true) // match other patterns - default case
+    }
   }
 
   test("makeOrderedLeafList for some frequency table") {
