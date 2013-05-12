@@ -40,7 +40,9 @@ class AnagramsSuite extends FunSuite {
     assert(wordAnagrams("player").toSet === Set("parley", "pearly", "player", "replay"))
   }
 
-
+  test("word anagrams: asdf") {
+    assert(wordAnagrams("asdf") === List())
+  }
 
   test("subtract: lard - r") {
     val lard = List(('a', 1), ('d', 1), ('l', 1), ('r', 1))

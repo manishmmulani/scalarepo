@@ -33,10 +33,11 @@ object Anagrams {
    *  Note: the uppercase and lowercase version of the character are treated as the
    *  same character, and are represented as a lowercase character in the occurrence list.
    */
-  def wordOccurrences(w: Word): Occurrences = ???
+  def wordOccurrences(w: Word): Occurrences =
+    w.toLowerCase.groupBy(ch => ch).map(e => (e._1, e._2.length)).toList.sorted
 
   /** Converts a sentence into its character occurrence list. */
-  def sentenceOccurrences(s: Sentence): Occurrences = ???
+  def sentenceOccurrences(s: Sentence): Occurrences = wordOccurrences(s mkString)
 
   /** The `dictionaryByOccurrences` is a `Map` from different occurrences to a sequence of all
    *  the words that have that occurrence count.
@@ -53,10 +54,14 @@ object Anagrams {
    *    List(('a', 1), ('e', 1), ('t', 1)) -> Seq("ate", "eat", "tea")
    *
    */
-  lazy val dictionaryByOccurrences: Map[Occurrences, List[Word]] = ???
+  lazy val dictionaryByOccurrences: Map[Occurrences, List[Word]] = 
+    loadDictionary groupBy (word => wordOccurrences(word))
 
   /** Returns all the anagrams of a given word. */
-  def wordAnagrams(word: Word): List[Word] = ???
+  def wordAnagrams(word: Word): List[Word] = dictionaryByOccurrences.get(wordOccurrences(word)) match {
+    case None => List()
+    case Some(list) => list 
+  }
 
   /** Returns the list of all subsets of the occurrence list.
    *  This includes the occurrence itself, i.e. `List(('k', 1), ('o', 1))`
@@ -80,7 +85,15 @@ object Anagrams {
    *  Note that the order of the occurrence list subsets does not matter -- the subsets
    *  in the example above could have been displayed in some other order.
    */
-  def combinations(occurrences: Occurrences): List[Occurrences] = ???
+  def combinations(occurrences: Occurrences): List[Occurrences] = occurrences match {
+    case List() => List(List())
+    case (ch, freq) :: xs => 
+      val othercombos:List[Occurrences] = combinations(xs)
+      (for {
+        i <- 0 to freq
+        occ <- othercombos
+      } yield if (i==0) occ else (ch, i) :: occ).toList
+  }
 
   /** Subtracts occurrence list `y` from occurrence list `x`.
    * 
