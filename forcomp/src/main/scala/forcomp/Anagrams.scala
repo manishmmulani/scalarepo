@@ -117,6 +117,25 @@ object Anagrams {
     }
   }
 
+  def allCombos(occ:Occurrences): List[List[Occurrences]] = {
+    // If y is a subset of x
+  	def isSubset(x:Occurrences, y:Occurrences): Boolean = {
+  	  y forall {
+  	    ypair => x exists (xpair => xpair._1 == ypair._1 && xpair._2 >= ypair._2)
+  	  }
+  	}
+
+    val combos: List[Occurrences] = combinations(occ)
+    combos match {
+  	  case List(List()) => List(List())
+  	  case _ => 
+	    (for {
+	      combo <- combos
+	      if combo != Nil && dictionaryByOccurrences.get(combo) != None && isSubset(occ, combo)
+	      otherOccs <- allCombos(subtract(occ, combo))
+	    } yield (combo :: otherOccs)).toList
+  	}
+  }
   /** Returns a list of all anagram sentences of the given sentence.
    *  
    *  An anagram of a sentence is formed by taking the occurrences of all the characters of
@@ -159,26 +178,6 @@ object Anagrams {
    */
   def sentenceAnagrams(sentence: Sentence): List[Sentence] = {
     val sentOccurrences: Occurrences = sentenceOccurrences(sentence)
-    
-    def allCombos(occ:Occurrences): List[List[Occurrences]] = {
-        // If y is a subset of x
-      	def isSubset(x:Occurrences, y:Occurrences): Boolean = {
-      	  y forall {
-      	    ypair => x exists (xpair => xpair._1 == ypair._1 && xpair._2 >= ypair._2)
-      	  }
-      	}
-
-	    val combos: List[Occurrences] = combinations(occ)
-	    combos match {
-      	  case List(List()) => List(List())
-      	  case _ => 
-		    (for {
-		      combo <- combos
-		      if combo != Nil && dictionaryByOccurrences.get(combo) != None && isSubset(occ, combo)
-		      otherOccs <- allCombos(subtract(occ, combo))
-		    } yield (combo :: otherOccs)).toList
-      	}
-    }
     
     def sentenceAnagrams(occList: List[Occurrences]): List[Sentence] = occList match {
       case List() => List(List())
