@@ -105,7 +105,17 @@ object Anagrams {
    *  Note: the resulting value is an occurrence - meaning it is sorted
    *  and has no zero-entries.
    */
-  def subtract(x: Occurrences, y: Occurrences): Occurrences = ???
+  def subtract(x: Occurrences, y: Occurrences): Occurrences = x match {
+    case List() => List()
+    case (xch, xfreq) :: xs => y match {
+      case List() => x
+      case (ych, yfreq) :: ys =>
+        if (xch != ych) (xch, xfreq) :: subtract(xs, y)
+        else if (xfreq < yfreq) throw new Error("Cannot subtract y from x")
+        else if (xfreq > yfreq) (xch, xfreq - yfreq) :: subtract(xs, ys)
+        else subtract(xs, ys)
+    }
+  }
 
   /** Returns a list of all anagram sentences of the given sentence.
    *  
@@ -147,6 +157,45 @@ object Anagrams {
    *
    *  Note: There is only one anagram of an empty sentence.
    */
-  def sentenceAnagrams(sentence: Sentence): List[Sentence] = ???
+  def sentenceAnagrams(sentence: Sentence): List[Sentence] = {
+    val sentOccurrences: Occurrences = sentenceOccurrences(sentence)
+    
+    def allCombos(occ:Occurrences): List[List[Occurrences]] = {
+        // If y is a subset of x
+      	def isSubset(x:Occurrences, y:Occurrences): Boolean = {
+      	  y forall {
+      	    ypair => x exists (xpair => xpair._1 == ypair._1 && xpair._2 >= ypair._2)
+      	  }
+      	}
+
+	    val combos: List[Occurrences] = combinations(occ)
+	    combos match {
+      	  case List(List()) => List(List())
+      	  case _ => 
+		    (for {
+		      combo <- combos
+		      if combo != Nil && dictionaryByOccurrences.get(combo) != None && isSubset(occ, combo)
+		      otherOccs <- allCombos(subtract(occ, combo))
+		    } yield (combo :: otherOccs)).toList
+      	}
+    }
+    
+    def sentenceAnagrams(occList: List[Occurrences]): List[Sentence] = occList match {
+      case List() => List(List())
+      case x :: xs => 
+        val wordList = dictionaryByOccurrences.get(x)
+        wordList match {
+          case None => List(List())
+          case Some(words) => 
+            for {
+              word <- words
+              sentence <- sentenceAnagrams(xs)
+            } yield word :: sentence
+        }
+    }
+    
+    val allComboOccurrences = allCombos(sentOccurrences)
+    (for (occ <- allComboOccurrences) yield sentenceAnagrams(occ)).flatten
+  }
 
 }
